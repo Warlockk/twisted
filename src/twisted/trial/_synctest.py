@@ -1015,10 +1015,17 @@ class SynchronousTestCase(_Assertions):
         Return the skip reason set on this test, if any is set. Checks on the
         instance first, then the class, then the module, then packages. As
         soon as it finds something with a C{skip} attribute, returns that.
+        If the C{skip} attribute does not exist, look for C{__unittest_skip__}
+        and C{__unittest_skip_why__} attributes which are set by the standard
+        library L{unittest.skip} function.
         Returns L{None} if it cannot find anything. See L{TestCase} docstring
         for more details.
         """
-        return util.acquireAttribute(self._parents, 'skip', None)
+        skipReason = util.acquireAttribute(self._parents, 'skip', None)
+        if skipReason is None:
+            if getattr(self, "__unittest_skip__", None):
+                skipReason = getattr(self, "__unittest_skip_why__", None)
+        return skipReason
 
 
     def getTodo(self):
